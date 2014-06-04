@@ -19,8 +19,6 @@ def scrape_genre(genre):
     suffix = genre + '/json/?sEcho=1&iDisplayStart=0'
     r = requests.get(genre_root + suffix, headers=headers)
     page = json.loads(r.text)
-    print "page: "
-    print page
     count = page['iTotalRecords']
 
     pages = count / 500
@@ -32,9 +30,11 @@ def scrape_genre(genre):
     for i in range(1,pages):
         if not check_cache(genre, i): 
             if scrape_genre_page(genre, i):
-                cache_page(genre, page)
-        else:           print 'already scraped! ' + genre + str(i)
-    
+                cache_page(genre, i)
+            else:
+                print 'something prevented caching'
+        else:
+            print 'already scraped! ' + genre + str(i)
     #scrape_genre_page(genre, pages-1)
     #scrape_genre_page(genre, pages) # just in case
     scrape_genre_page(genre, pages+1) # never cache the last page
@@ -67,7 +67,7 @@ def process_json(page, genre):
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def cache_page(genre, page):
-    print "caching "+str(genre)+" page: "+str(page)
+    print "caching ", genre+" "+str(page)
     scraperwiki.sqlite.save_var(genre+str(page), datetime.now().strftime("%c"))
 
 def check_cache(genre, page):
@@ -77,7 +77,6 @@ def check_cache(genre, page):
         return False
     else:
         try:
-            print "comparing dates"
             d = datetime.strptime(val, "%c")
             return (datetime.now() - d).days < GENRE_CACHE_DAYS
         except:
