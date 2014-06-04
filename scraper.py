@@ -69,13 +69,13 @@ def cache_page(genre, page):
 def check_cache(genre, page):
     val = scraperwiki.sqlite.get_var(genre+str(page))
     if val == 1:
-        return false
+        return False
     else:
         print "new cache entry"
         print val
         d = datetime(val)
         print d
-        return true
+        return True
 
 def scrape_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
