@@ -19,11 +19,14 @@ def scrape_genre(genre):
     suffix = genre + '/json/?sEcho=1&iDisplayStart=0'
     r = requests.get(genre_root + suffix, headers=headers)
     page = json.loads(r.text)
+    print "page: "
+    print page
     count = page['iTotalRecords']
 
     pages = count / 500
     if not count % 500: pages -= 1
     if not check_cache(genre, 0):
+        print "not cached, processing json"
         process_json(page, genre)
         cache_page(genre, 0) 
     for i in range(1,pages):
@@ -37,9 +40,9 @@ def scrape_genre(genre):
     scrape_genre_page(genre, pages+1) # never cache the last page
 
 def scrape_genre_page(genre, page):
-    print "page ", page
+    print "scraping genre page ", genre, page
     suffix = genre + '/json/?sEcho=1&iDisplayStart=' + str(500 * page)
-    print suffix
+    #print suffix
     r = requests.get(genre_root + suffix, headers=headers)
     if r.text: 
         json_obj = json.loads(r.text)
@@ -64,18 +67,22 @@ def process_json(page, genre):
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def cache_page(genre, page):
-    scraperwiki.sqlite.save_var(genre+str(page), datetime.now())
+    print "caching "+str(genre)+" page: "+str(page)
+    scraperwiki.sqlite.save_var(genre+str(page), datetime.now().strftime("%c"))
 
 def check_cache(genre, page):
     val = scraperwiki.sqlite.get_var(genre+str(page))
-    if val == 1:
+    print "checking cache " + str(val)
+    if val == None or val == 1:
         return False
     else:
-        print "new cache entry"
-        print val
-        d = datetime(val)
-        print d
-        return True
+        try:
+            print "comparing dates"
+            d = datetime.strptime(val, "%c")
+            return (datetime.now() - d).days < GENRE_CACHE_DAYS
+        except:
+            print "error parsing date"
+            return False
 
 def scrape_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
