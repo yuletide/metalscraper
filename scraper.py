@@ -13,6 +13,8 @@ genres = ('heavy', 'black', 'death', 'doom', 'thrash', 'speed', 'folk', 'power',
 
 genre_root = 'http://www.metal-archives.com/browse/ajax-genre/g/'
 
+GENRE_CACHE_DAYS = 60
+
 def scrape_genre(genre):
     suffix = genre + '/json/?sEcho=1&iDisplayStart=0'
     r = requests.get(genre_root + suffix, headers=headers)
@@ -69,9 +71,9 @@ def check_cache(genre, page):
 
 def scrape_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
-    bands = scraperwiki.sqlite.select("* FROM data where scraped IS NULL OR scraped == '0'" + limit)
-#    bands = scraperwiki.sqlite.select("* FROM data where id==5678")
-#    print bands
+#    bands = scraperwiki.sqlite.select("* FROM data where scraped IS NULL OR scraped == '0'" + limit)
+    bands = scraperwiki.sqlite.select("* FROM data where id==5678")
+    print bands
     for band in bands:
         scrape_band(band)
         sleep(random())
@@ -85,7 +87,7 @@ def get_failed_bands(limit=''):
     return scraperwiki.sqlite.select("* FROM data where scraped == '-1'")
 
 def scrape_band(band):
-    #print 'scraping band '+str(band)
+    print 'scraping band '+str(band)
     if band['link']:
         r = requests.get(band['link'])
         if r.status_code == 200 and r.text:
@@ -143,7 +145,7 @@ recommendations: http://www.metal-archives.com/band/ajax-recommendations/id/3540
 links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 
 '''
-
+'''
 scrape_bands(500)
 sleep(500)
 scrape_bands(500)
@@ -157,7 +159,10 @@ print get_scraped_bands()
 
 for genre in genres:
     scrape_genre(genre)
-
+'''
+print "running!"
+scrape_genre('heavy')
+scrape_bands()
 
 
 
