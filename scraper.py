@@ -62,7 +62,7 @@ def process_json(page, genre):
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def cache_page(genre, page):
-    scraperwiki.sqlite.save_var(genre+str(page), 1)
+    scraperwiki.sqlite.save_var(genre+str(page), datetime.now())
 
 def check_cache(genre, page):
     return scraperwiki.sqlite.get_var(genre+str(page))
