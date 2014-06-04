@@ -150,12 +150,12 @@ scrape_bands(500)
 
 
 
-#print get_failed_bands()
-#print get_scraped_bands()
+print get_failed_bands()
+print get_scraped_bands()
 #clear_band_cache(get_failed_bands())
 
-#for genre in genres:
-    #scrape_genre(genre)
+for genre in genres:
+    scrape_genre(genre)
 
 
 
