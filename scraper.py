@@ -35,9 +35,9 @@ def scrape_genre(genre):
     scrape_genre_page(genre, pages+1) # never cache the last page
 
 def scrape_genre_page(genre, page):
-    #print "page ", page
+    print "page ", page
     suffix = genre + '/json/?sEcho=1&iDisplayStart=' + str(500 * page)
-    #print suffix
+    print suffix
     r = requests.get(genre_root + suffix, headers=headers)
     if r.text: 
         json_obj = json.loads(r.text)
@@ -149,8 +149,9 @@ sleep(500)
 scrape_bands(500)
 
 
-
+print "failed bands: "
 print get_failed_bands()
+print "scraped bands: "
 print get_scraped_bands()
 #clear_band_cache(get_failed_bands())
 
