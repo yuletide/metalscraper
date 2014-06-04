@@ -67,7 +67,15 @@ def cache_page(genre, page):
     scraperwiki.sqlite.save_var(genre+str(page), datetime.now())
 
 def check_cache(genre, page):
-    return scraperwiki.sqlite.get_var(genre+str(page))
+    val = scraperwiki.sqlite.get_var(genre+str(page))
+    if val == 1:
+        return false
+    else:
+        print "new cache entry"
+        print val
+        d = datetime(val)
+        print d
+        return true
 
 def scrape_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
@@ -160,7 +168,6 @@ print get_scraped_bands()
 for genre in genres:
     scrape_genre(genre)
 '''
-print "running!"
 scrape_genre('black')
 
 
