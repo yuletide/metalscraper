@@ -87,7 +87,7 @@ def get_failed_bands(limit=''):
     return scraperwiki.sqlite.select("* FROM data where scraped == '-1'")
 
 def scrape_band(band):
-    print 'scraping band '+str(band)
+    print 'scraping band '+ band['name']
     if band['link']:
         r = requests.get(band['link'])
         if r.status_code == 200 and r.text:
@@ -161,8 +161,7 @@ for genre in genres:
     scrape_genre(genre)
 '''
 print "running!"
-scrape_genre('heavy')
-scrape_bands()
+scrape_genre('black')
 
 
 
