@@ -69,8 +69,8 @@ def check_cache(genre, page):
 
 def scrape_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
-    bands = scraperwiki.sqlite.select("* FROM swdata where scraped IS NULL OR scraped == '0'" + limit)
-#    bands = scraperwiki.sqlite.select("* FROM swdata where id==5678")
+    bands = scraperwiki.sqlite.select("* FROM data where scraped IS NULL OR scraped == '0'" + limit)
+#    bands = scraperwiki.sqlite.select("* FROM data where id==5678")
 #    print bands
     for band in bands:
         scrape_band(band)
@@ -78,11 +78,11 @@ def scrape_bands(limit=''):
 
 def get_scraped_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
-    return scraperwiki.sqlite.select("* FROM swdata where scraped IS NOT NULL and scraped <> '0' ORDER BY scraped DESC" + limit)
+    return scraperwiki.sqlite.select("* FROM data where scraped IS NOT NULL and scraped <> '0' ORDER BY scraped DESC" + limit)
 
 def get_failed_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
-    return scraperwiki.sqlite.select("* FROM swdata where scraped == '-1'")
+    return scraperwiki.sqlite.select("* FROM data where scraped == '-1'")
 
 def scrape_band(band):
     #print 'scraping band '+str(band)
@@ -126,7 +126,7 @@ def clear_band_cache(bands):
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def get_band_by_id(id):
-    records = scraperwiki.sqlite.select("* from swdata WHERE id="+str(id))
+    records = scraperwiki.sqlite.select("* from data WHERE id="+str(id))
     if len(records): return records[0]
 
 #to test encoding
