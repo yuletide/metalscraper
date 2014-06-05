@@ -28,7 +28,7 @@ def scrape_genre(genre):
         print "not cached, processing json"
         process_json(page, genre)
         cache_page(genre, 0) 
-    for i in range(1,pages):
+    for i in range(1,pages+1):
         if not check_cache(genre, i): 
             if scrape_genre_page(genre, i):
                 cache_page(genre, i)
@@ -102,14 +102,14 @@ def get_failed_bands(limit=''):
     return scraperwiki.sqlite.select("* FROM data where scraped == '-1'")
 
 def scrape_band(band):
-    print 'scraping band '+ band['name']
+    print 'scraping band '+ band['id']
     if band['link']:
         r = requests.get(band['link'])
         if r.status_code == 200 and r.text:
             root = lxml.html.fromstring(r.text)
             keys = map(lambda x: x.text_content()[:-1], root.cssselect('dt'))
             vals = map(lambda x: x.text_content(), root.cssselect('dd'))
-            print vals
+            #print vals
             for i,key in enumerate(keys):
                 if key == 'Location':
                     band['location'] = vals[i]
