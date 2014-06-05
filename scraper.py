@@ -85,8 +85,8 @@ def check_cache(genre, page):
 
 def scrape_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
-#    bands = scraperwiki.sqlite.select("* FROM data where scraped IS NULL OR scraped == '0'" + limit)
-    bands = scraperwiki.sqlite.select("* FROM data where id==5678")
+    bands = scraperwiki.sqlite.select("* FROM data where scraped IS NULL OR scraped == '0'" + limit)
+#    bands = scraperwiki.sqlite.select("* FROM data where id==5678")
     print bands
     for band in bands:
         scrape_band(band)
@@ -160,19 +160,20 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 
 '''
 
+for genre in genres:
+    scrape_genre(genre)
+'''
 scrape_bands(500)
 sleep(500)
 scrape_bands(500)
-
 
 print "failed bands: "
 print get_failed_bands()
 print "scraped bands: "
 print get_scraped_bands()
 #clear_band_cache(get_failed_bands())
+'''
 
-for genre in genres:
-    scrape_genre(genre)
 
 
 
