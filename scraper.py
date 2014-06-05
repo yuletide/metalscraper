@@ -4,6 +4,7 @@ import requests
 import re
 import lxml.html
 from time import sleep
+from time import time
 from random import random
 from datetime import datetime
 
@@ -129,6 +130,7 @@ def scrape_band(band):
 def save_band(band):
     print 'scrape successful ' + band['id']
     band['scraped'] = datetime.now()
+    band['scraped_timestamp'] = time()
     scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def save_band_failed(band):
