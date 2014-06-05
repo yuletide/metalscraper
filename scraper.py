@@ -164,11 +164,11 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 
 for genre in genres:
     scrape_genre(genre)
-'''
+
 scrape_bands(500)
 sleep(500)
 scrape_bands(500)
-
+'''
 print "failed bands: "
 print get_failed_bands()
 print "scraped bands: "
