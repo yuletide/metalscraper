@@ -72,7 +72,7 @@ def cache_page(genre, page):
 
 def check_cache(genre, page):
     val = scraperwiki.sqlite.get_var(genre+str(page))
-    print "checking cache " + str(val)
+    print "checking cache: " + str(val)
     if val == None or val == 1:
         return False
     else:
@@ -159,7 +159,7 @@ recommendations: http://www.metal-archives.com/band/ajax-recommendations/id/3540
 links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 
 '''
-'''
+
 scrape_bands(500)
 sleep(500)
 scrape_bands(500)
@@ -173,8 +173,6 @@ print get_scraped_bands()
 
 for genre in genres:
     scrape_genre(genre)
-'''
-scrape_genre('black')
 
 
 
