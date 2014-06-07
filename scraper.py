@@ -24,11 +24,11 @@ def scrape_genre(genre):
 
     pages = count / 500
     if not count % 500: pages -= 1
-    if not check_cache(genre, 0):
+    #if not check_cache(genre, 0):
         #print "not cached, processing json"
-        process_json(page, genre)
-        cache_page(genre, 0) 
-    for i in range(1,pages+1):
+        #process_json(page, genre)
+        #cache_page(genre, 0) 
+    for i in range(0,pages+1):
         if not check_cache(genre, i): 
             if scrape_genre_page(genre, i):
                 cache_page(genre, i)
@@ -37,8 +37,8 @@ def scrape_genre(genre):
         else:
             print 'already scraped! ' + genre + str(i)
     #scrape_genre_page(genre, pages-1)
-    scrape_genre_page(genre, pages) # just in case
-    scrape_genre_page(genre, pages+1) # never cache the last page
+    #scrape_genre_page(genre, pages) # just in case
+    #scrape_genre_page(genre, pages+1) # never cache the last page
 
 def scrape_genre_page(genre, page):
     print "scraping genre page ", genre, page
