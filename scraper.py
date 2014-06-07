@@ -88,7 +88,7 @@ def scrape_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
     bands = scraperwiki.sqlite.select("* FROM data where scraped IS NULL OR scraped == '0'" + limit)
 #    bands = scraperwiki.sqlite.select("* FROM data where id==5678")
-    print bands
+#    print bands
     for band in bands:
         scrape_band(band)
         sleep(random())
