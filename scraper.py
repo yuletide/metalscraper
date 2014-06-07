@@ -24,6 +24,9 @@ def scrape_genre(genre):
 
     pages = count / 500
     if not count % 500: pages -= 1
+
+    scrape_genre_page(genre, 0)
+    
     #if not check_cache(genre, 0):
         #print "not cached, processing json"
         #process_json(page, genre)
