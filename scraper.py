@@ -25,7 +25,7 @@ def scrape_genre(genre):
     pages = count / 500
     if not count % 500: pages -= 1
     if not check_cache(genre, 0):
-        print "not cached, processing json"
+        #print "not cached, processing json"
         process_json(page, genre)
         cache_page(genre, 0) 
     for i in range(1,pages+1):
@@ -39,7 +39,6 @@ def scrape_genre(genre):
     #scrape_genre_page(genre, pages-1)
     scrape_genre_page(genre, pages) # just in case
     scrape_genre_page(genre, pages+1) # never cache the last page
-    scrape_genre_page(genre, pages+2) # why not 
 
 def scrape_genre_page(genre, page):
     print "scraping genre page ", genre, page
@@ -74,7 +73,7 @@ def cache_page(genre, page):
 
 def check_cache(genre, page):
     val = scraperwiki.sqlite.get_var(genre+str(page))
-    print "checking cache: " + str(val)
+#    print "checking cache: " + str(val)
     if val == None or val == 1:
         return False
     else:
