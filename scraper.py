@@ -37,8 +37,9 @@ def scrape_genre(genre):
         else:
             print 'already scraped! ' + genre + str(i)
     #scrape_genre_page(genre, pages-1)
-    #scrape_genre_page(genre, pages) # just in case
+    scrape_genre_page(genre, pages) # just in case
     scrape_genre_page(genre, pages+1) # never cache the last page
+    scrape_genre_page(genre, pages+2) # why not 
 
 def scrape_genre_page(genre, page):
     print "scraping genre page ", genre, page
