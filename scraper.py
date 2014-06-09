@@ -145,7 +145,7 @@ def get_band_by_id(id):
     if len(records): return records[0]
 
 
-def clean_old_placenames:
+def clean_old_placenames():
     records = scraperwiki.sqlite.select("* from data WHERE location_utf is NULL limit 5")
     for band in records:
         print "fixing band name: "+str(band)
