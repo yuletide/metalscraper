@@ -99,7 +99,7 @@ def get_failed_bands(limit=''):
     return scraperwiki.sqlite.select("* FROM data where scraped == '-1'")
 
 def scrape_band(band):
-    print 'scraping band '+ band['id']
+    #print 'scraping band '+ band['id']
     if band['link']:
         r = requests.get(band['link'])
         if r.status_code == 200 and r.text:
@@ -150,7 +150,6 @@ def clean_old_placenames():
     for band in records:
         band['location_utf'] = band['location'].encode('ISO-8859-1').decode('utf-8')
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
-        print band
 
 #to test encoding
 #scrape_band(get_band_by_id(5678))
