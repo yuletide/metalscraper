@@ -146,11 +146,11 @@ def get_band_by_id(id):
 
 
 def clean_old_placenames():
-    records = scraperwiki.sqlite.select("* from data WHERE location_utf is NULL limit 500")
+    records = scraperwiki.sqlite.select("* from data WHERE location IS NOT NULL and location_utf is NULL limit 500")
     for band in records:
         band['location_utf'] = band['location'].encode('ISO-8859-1').decode('utf-8')
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
-        print band['location_utf']
+        print band
 
 #to test encoding
 #scrape_band(get_band_by_id(5678))
