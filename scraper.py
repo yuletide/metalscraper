@@ -25,12 +25,6 @@ def scrape_genre(genre):
     pages = count / 500
     if not count % 500: pages -= 1
 
-    #scrape_genre_page(genre, 0)
-    
-    #if not check_cache(genre, 0):
-        #print "not cached, processing json"
-        #process_json(page, genre)
-        #cache_page(genre, 0) 
     for i in range(0,pages+1):
         if not check_cache(genre, i): 
             if scrape_genre_page(genre, i):
@@ -150,6 +144,15 @@ def get_band_by_id(id):
     records = scraperwiki.sqlite.select("* from data WHERE id="+str(id))
     if len(records): return records[0]
 
+
+def clean_old_placenames:
+    records = scraperwiki.sqlite.select("* from data WHERE location_utf is NULL limit 5")
+    for band in records:
+        print "fixing band name: "+str(band)
+        band['location_utf'] = band['location'].encode('ISO-8859-1').decode('utf-8')
+        scraperwiki.sqlite.save(unique_keys=['id'], data=band)
+        print "fixed band name: "+str(band)
+
 #to test encoding
 #scrape_band(get_band_by_id(5678))
 
@@ -171,6 +174,8 @@ for genre in genres:
 scrape_bands(500)
 sleep(500)
 scrape_bands(500)
+
+clean_old_placenames()
 '''
 print "failed bands: "
 print get_failed_bands()
