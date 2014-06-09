@@ -146,7 +146,7 @@ def get_band_by_id(id):
 
 
 def clean_old_placenames():
-    records = scraperwiki.sqlite.select("* from data WHERE location IS NOT NULL and location_utf is NULL limit 500")
+    records = scraperwiki.sqlite.select("* from data WHERE location IS NOT NULL and location_utf is NULL")
     for band in records:
         band['location_utf'] = band['location'].encode('ISO-8859-1').decode('utf-8')
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
@@ -166,7 +166,6 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 
 '''
 
-clean_old_placenames()
 
 for genre in genres:
     scrape_genre(genre)
@@ -175,6 +174,7 @@ scrape_bands(500)
 sleep(500)
 scrape_bands(500)
 
+clean_old_placenames()
 '''
 print "failed bands: "
 print get_failed_bands()
