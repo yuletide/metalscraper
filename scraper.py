@@ -14,7 +14,7 @@ genres = ('heavy', 'black', 'death', 'doom', 'thrash', 'speed', 'folk', 'power',
 
 genre_root = 'http://www.metal-archives.com/browse/ajax-genre/g/'
 
-GENRE_CACHE_DAYS = 60
+GENRE_CACHE_DAYS = 1
 
 def scrape_genre(genre):
     suffix = genre + '/json/?sEcho=1&iDisplayStart=0'
@@ -40,7 +40,7 @@ def scrape_genre(genre):
 def scrape_genre_page(genre, page):
     print "scraping genre page ", genre, page
     suffix = genre + '/json/?sEcho=1&iDisplayStart=' + str(500 * page)
-    #print suffix
+    print suffix
     r = requests.get(genre_root + suffix, headers=headers)
     if r.text: 
         json_obj = json.loads(r.text)
