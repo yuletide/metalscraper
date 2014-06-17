@@ -42,12 +42,12 @@ def scrape_genre_page(genre, page):
     suffix = genre + '/json/?sEcho=1&iDisplayStart=' + str(500 * page)
     print suffix
     r = requests.get(genre_root + suffix, headers=headers)
-    if r.text: 
+    try: 
         json_obj = json.loads(r.text)
         process_json(json_obj, genre)
         return True
-    else:
-        print "no request body! ", str(r)
+    except:
+        print "error parsing JSON or no request body! ", str(r)
         return False
 
 def process_json(page, genre):
