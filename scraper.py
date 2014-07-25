@@ -173,8 +173,12 @@ for genre in genres:
 scrape_bands(500)
 sleep(500)
 scrape_bands(500)
+sleep(500)
+scrape_bands(500)
+sleep(500)
+scrape_bands(500)
 
-clean_old_placenames()
+#clean_old_placenames()
 '''
 print "failed bands: "
 print get_failed_bands()
