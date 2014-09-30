@@ -83,7 +83,7 @@ def check_cache(genre, page):
 
 def scrape_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
-    bands = scraperwiki.sqlite.select("* FROM data where scraped IS NULL OR scraped == '0'" + limit)
+    bands = scraperwiki.sqlite.select("* FROM data where scraped IS NULL OR scraped == '0' OR scraped == '-1'" + limit)
 #    bands = scraperwiki.sqlite.select("* FROM data where id==5678")
 #    print bands
     for band in bands:
