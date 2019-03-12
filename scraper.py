@@ -22,32 +22,32 @@ def scrape_genre(genre):
     page = json.loads(r.text)
     count = page['iTotalRecords']
 
-    pages = count / 500
+    pages = int(count / 500)
     if not count % 500: pages -= 1
 
-    for i in range(0,pages+1):
+    for i in range(0, pages+1):
         if not check_cache(genre, i): 
             if scrape_genre_page(genre, i):
                 cache_page(genre, i)
             else:
-                print 'something prevented caching'
+                print('something prevented caching')
         else:
-            print 'already scraped! ' + genre + str(i)
+            print('already scraped! ' + genre + str(i))
     #scrape_genre_page(genre, pages-1)
     #scrape_genre_page(genre, pages) # just in case
     #scrape_genre_page(genre, pages+1) # never cache the last page
 
 def scrape_genre_page(genre, page):
-    print "scraping genre page ", genre, page
+    print ("scraping genre page ", genre, page)
     suffix = genre + '/json/?sEcho=1&iDisplayStart=' + str(500 * page)
-    print suffix
+    print (suffix)
     r = requests.get(genre_root + suffix, headers=headers)
     try: 
         json_obj = json.loads(r.text)
         process_json(json_obj, genre)
         return True
     except:
-        print "error parsing JSON or no request body! ", str(r)
+        print ("error parsing JSON or no request body! ", str(r))
         return False
 
 def process_json(page, genre):
@@ -65,7 +65,7 @@ def process_json(page, genre):
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def cache_page(genre, page):
-    print "caching ", genre+" "+str(page)
+    print ("caching ", genre+" "+str(page))
     scraperwiki.sqlite.save_var(genre+str(page), datetime.now().strftime("%c"))
 
 def check_cache(genre, page):
@@ -78,7 +78,7 @@ def check_cache(genre, page):
             d = datetime.strptime(val, "%c")
             return (datetime.now() - d).days < GENRE_CACHE_DAYS
         except:
-            print "error parsing date"
+            print ("error parsing date")
             return False
 
 def scrape_bands(limit=''):
@@ -125,13 +125,13 @@ def scrape_band(band):
     return False
     
 def save_band(band):
-    print 'scrape successful ' + band['id']
+    print ('scrape successful ' + band['id'])
     band['scraped'] = datetime.now()
     band['scraped_timestamp'] = time()
     scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def save_band_failed(band):
-    print 'scrape failed '+band['id']
+    print ('scrape failed '+band['id'])
     band['scraped'] = '-1'
     scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
