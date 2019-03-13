@@ -65,12 +65,12 @@ def process_json(page, genre):
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def cache_page(genre, page):
-    print ("caching ", genre+" "+str(page))
+    print("caching ", genre+" "+str(page))
     scraperwiki.sqlite.save_var(genre+str(page), datetime.now().strftime("%c"))
 
 def check_cache(genre, page):
     val = scraperwiki.sqlite.get_var(genre+str(page))
-    print ("checking cache: " + str(val))
+    print("checking cache: " + str(val))
     if val == None or val == 1:
         return False
     else:
