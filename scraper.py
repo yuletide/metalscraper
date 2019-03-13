@@ -21,8 +21,7 @@ def scrape_genre(genre):
     r = requests.get(genre_root + suffix, headers=headers)
     page = json.loads(r.text)
     count = page['iTotalRecords']
-
-    pages = int(count / 500)
+    pages = count // 500
     if not count % 500: pages -= 1
 
     for i in range(0, pages+1):
@@ -53,6 +52,7 @@ def scrape_genre_page(genre, page):
 def process_json(page, genre):
     for item in page['aaData']:
         link=re.sub('<a href=\'(.*)\'>(.*)</a>', '\\1|\\2', item[0]).split('|')
+        # print(link)
         id = link[0].split('/')[5]
         band = {}
         band['name'] = link[1]
@@ -61,7 +61,7 @@ def process_json(page, genre):
         band['genre'] = item[2]
         band['id'] = id
         band['category'] = genre
-        #print bands[str(id)]
+        # print(band)
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def cache_page(genre, page):
@@ -70,7 +70,7 @@ def cache_page(genre, page):
 
 def check_cache(genre, page):
     val = scraperwiki.sqlite.get_var(genre+str(page))
-    print "checking cache: " + str(val)
+    print ("checking cache: " + str(val))
     if val == None or val == 1:
         return False
     else:
