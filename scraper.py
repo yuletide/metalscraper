@@ -70,7 +70,7 @@ def cache_page(genre, page):
 
 def check_cache(genre, page):
     val = scraperwiki.sqlite.get_var(genre+str(page))
-#    print "checking cache: " + str(val)
+    print "checking cache: " + str(val)
     if val == None or val == 1:
         return False
     else:
