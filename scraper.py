@@ -12,13 +12,13 @@ headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 
 
 genres = ('heavy', 'black', 'death', 'doom', 'thrash', 'speed', 'folk', 'power', 'prog', 'electronic', 'gothic', 'orchestral', 'avantgarde')
 
-genre_root = 'http://metal-archives.com/browse/ajax-genre/g/'
+genre_root = 'https://metal-archives.com/browse/ajax-genre/g/'
 
 GENRE_CACHE_DAYS = 60
 
 def scrape_genre(genre):
     suffix = genre + '/json/?sEcho=1&iDisplayStart=0'
-    r = requests.get(genre_root + suffix, headers=headers)
+    r = requests.get(genre_root + suffix, headers=headers verify=False)
     page = json.loads(r.text)
     count = page['iTotalRecords']
     pages = count // 500
@@ -40,7 +40,7 @@ def scrape_genre_page(genre, page):
     print ("scraping genre page ", genre, page)
     suffix = genre + '/json/?sEcho=1&iDisplayStart=' + str(500 * page)
     print (suffix)
-    r = requests.get(genre_root + suffix, headers=headers)
+    r = requests.get(genre_root + suffix, headers=headers, verify=False)
     try: 
         json_obj = json.loads(r.text)
         process_json(json_obj, genre)
