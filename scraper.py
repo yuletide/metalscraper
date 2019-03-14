@@ -18,7 +18,7 @@ GENRE_CACHE_DAYS = 60
 
 def scrape_genre(genre):
     suffix = genre + '/json/?sEcho=1&iDisplayStart=0'
-    r = requests.get(genre_root + suffix, headers=headers verify=False)
+    r = requests.get(genre_root + suffix, headers=headers, verify=False)
     page = json.loads(r.text)
     count = page['iTotalRecords']
     pages = count // 500
