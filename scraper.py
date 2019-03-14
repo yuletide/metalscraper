@@ -101,7 +101,7 @@ def get_failed_bands(limit=''):
 def scrape_band(band):
     #print 'scraping band '+ band['id']
     if band['link']:
-        r = requests.get(band['link'])
+        r = requests.get(band['link'], verify=False)
         if r.status_code == 200 and r.text:
             root = lxml.html.fromstring(r.text)
             keys = map(lambda x: x.text_content()[:-1], root.cssselect('dt'))
@@ -167,8 +167,8 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 '''
 
 
-for genre in genres:
-    scrape_genre(genre)
+#for genre in genres:
+    #scrape_genre(genre)
 
 scrape_bands(500)
 sleep(500)
