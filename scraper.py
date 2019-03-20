@@ -7,18 +7,18 @@ from time import sleep
 from time import time
 from random import random
 from datetime import datetime
+from mapbox import Geocoder
 
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6'}
-
+headers = {'User-Agent': 'Mozilla/5.0 (Windows) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36'}
 genres = ('heavy', 'black', 'death', 'doom', 'thrash', 'speed', 'folk', 'power', 'prog', 'electronic', 'gothic', 'orchestral', 'avantgarde')
 
 genre_root = 'https://metal-archives.com/browse/ajax-genre/g/'
 
-GENRE_CACHE_DAYS = 60
+GENRE_CACHE_DAYS = 120
 
 def scrape_genre(genre):
     suffix = genre + '/json/?sEcho=1&iDisplayStart=0'
-    r = requests.get(genre_root + suffix, headers=headers, verify=False)
+    r = requests.get(genre_root + suffix, headers=headers)
     page = json.loads(r.text)
     count = page['iTotalRecords']
     pages = count // 500
@@ -40,7 +40,7 @@ def scrape_genre_page(genre, page):
     print ("scraping genre page ", genre, page)
     suffix = genre + '/json/?sEcho=1&iDisplayStart=' + str(500 * page)
     print (suffix)
-    r = requests.get(genre_root + suffix, headers=headers, verify=False)
+    r = requests.get(genre_root + suffix, headers=headers)
     try: 
         json_obj = json.loads(r.text)
         process_json(json_obj, genre)
@@ -83,30 +83,29 @@ def check_cache(genre, page):
 
 def scrape_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
-    bands = scraperwiki.sqlite.select("* FROM data where scraped IS NULL OR scraped == '0' OR scraped == '-1'" + limit)
-#    bands = scraperwiki.sqlite.select("* FROM data where id==5678")
-#    print bands
+    bands = scraperwiki.sqlite.select("* FROM swdata where scraped IS NULL OR scraped == '0' OR scraped == '-1'" + limit)
     for band in bands:
         scrape_band(band)
-        sleep(random())
+        sleep(random()*3)
 
 def get_scraped_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
-    return scraperwiki.sqlite.select("* FROM data where scraped IS NOT NULL and scraped <> '0' ORDER BY scraped DESC" + limit)
+    return scraperwiki.sqlite.select("* FROM swdata where scraped IS NOT NULL and scraped <> '0' ORDER BY scraped DESC" + limit)
 
 def get_failed_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
-    return scraperwiki.sqlite.select("* FROM data where scraped == '-1'")
+    return scraperwiki.sqlite.select("* FROM swdata where scraped == '-1'")
 
 def scrape_band(band):
-    #print 'scraping band '+ band['id']
+    print ('scraping band '+ band['id'])
     if band['link']:
-        r = requests.get(band['link'], verify=False)
+        print(band['link'])
+        r = requests.get(band['link'])
+        print(r)
         if r.status_code == 200 and r.text:
             root = lxml.html.fromstring(r.text)
             keys = map(lambda x: x.text_content()[:-1], root.cssselect('dt'))
             vals = map(lambda x: x.text_content(), root.cssselect('dd'))
-            #print vals
             for i,key in enumerate(keys):
                 if key == 'Location':
                     band['location'] = vals[i]
@@ -151,8 +150,35 @@ def clean_old_placenames():
         band['location_utf'] = band['location'].encode('ISO-8859-1').decode('utf-8')
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
-#to test encoding
-#scrape_band(get_band_by_id(5678))
+def get_ungeocoded_bands(limit=''):
+    if limit: limit = " LIMIT " + str(limit)
+    return scraperwiki.sqlite.select("data.* from data INNER JOIN swdata ON data.id = swdata.id WHERE geo_center IS NULL")
+
+def geocode_band(band):
+    print("Geocoding band "+band['id'])
+
+    if band['location_utf'] and band['country']:
+        query = band['location_utf'] + ', ' + band['country']
+        print(query)
+        response = geocoder.forward(query)
+        collection = response.json()
+        feature = collection['features'][0]
+        print(feature)
+        band['geo_place_id'] = feature['id']
+        band['geo_place_name'] = feature['place_name']
+        band['geo_place_type'] = feature['place_type'][0]
+        band['geo_relevance'] = feature['relevance']
+        band['geo_center'] = str(feature['center'])
+        band['geo_geom'] = str(feature['geometry'])
+        band['geo_properties'] = str(feature['properties'])
+        if 'context' in feature:
+            band['geo_context'] = str(feature['context'])
+        print(str(band))
+        print('geocode success')
+        scraperwiki.sqlite.save(unique_keys=['id'], data=band)
+    else: 
+        print("missing fields "+str(band))
+
 
 ''' band ajax points 
 root: http://www.metal-archives.com/band/view/id/3540277491
@@ -166,9 +192,14 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 
 '''
 
+geocoder = Geocoder(name='mapbox.places-permanent')
+# geocode_band(get_band_by_id(5678))
 
-#for genre in genres:
-    #scrape_genre(genre)
+for band in get_ungeocoded_bands(5000):
+    geocode_band(band)
+
+# for genre in genres:
+#     scrape_genre(genre)
 
 scrape_bands(500)
 sleep(500)
@@ -184,8 +215,9 @@ print "failed bands: "
 print get_failed_bands()
 print "scraped bands: "
 print get_scraped_bands()
-#clear_band_cache(get_failed_bands())
 '''
+
+
 
 
 
