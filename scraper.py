@@ -152,32 +152,54 @@ def clean_old_placenames():
 
 def get_ungeocoded_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
-    return scraperwiki.sqlite.select("data.* from data INNER JOIN swdata ON data.id = swdata.id WHERE geo_center IS NULL")
 
+    return scraperwiki.sqlite.select("data.* from data INNER JOIN swdata ON data.id = swdata.id WHERE geo_center IS NULL and data.location_utf IS NOT NULL and data.location_utf <> 'N/A'")
+    # return scraperwiki.sqlite.select("* from data WHERE data.location_utf IS NOT NULL and data.location_utf <> 'N/A'")
+    
 def geocode_band(band):
     print("Geocoding band "+band['id'])
+    types = ('place', 'locality', 'region', 'district')
 
     if band['location_utf'] and band['country']:
         query = band['location_utf'] + ', ' + band['country']
+        # TODO geocode both early and later? Make this smarter
         print(query)
-        response = geocoder.forward(query)
+        if '(early)' in query:
+            # print(query.split('(early)'))
+            query = re.sub('\;', '', query)
+            query = query.split('(early)')[1]
+            query = re.sub('\(later\)', '', query)
+            print('Early query '+query)
+        elif ';' in query:
+            query = query.split(';')[0]
+            query = re.sub('\;', '', query)
+        print('cleaned query '+query)    
+        response = geocoder.forward(query, types=types)
         collection = response.json()
-        feature = collection['features'][0]
-        print(feature)
-        band['geo_place_id'] = feature['id']
-        band['geo_place_name'] = feature['place_name']
-        band['geo_place_type'] = feature['place_type'][0]
-        band['geo_relevance'] = feature['relevance']
-        band['geo_center'] = str(feature['center'])
-        band['geo_geom'] = str(feature['geometry'])
-        band['geo_properties'] = str(feature['properties'])
-        if 'context' in feature:
-            band['geo_context'] = str(feature['context'])
-        print(str(band))
-        print('geocode success')
+        print(collection)
+        print('\n')
+        print(collection['features'])
+        if len(collection['features']):
+            feature = collection['features'][0]
+            print('feature\n')
+            print(feature)
+            if 'id' in feature: 
+                band['geo_place_id'] = feature['id']
+            band['geo_place_name'] = feature['place_name']
+            band['geo_place_type'] = feature['place_type'][0]
+            band['geo_relevance'] = feature['relevance']
+            band['geo_center'] = str(feature['center'])
+            band['geo_geom'] = str(feature['geometry'])
+            band['geo_properties'] = str(feature['properties'])
+            if 'context' in feature:
+                band['geo_context'] = str(feature['context'])
+            print('geocode success: '+str(band))
+        else: 
+            print('no geocode results')
+            band['geo_place_id'] = '-1'
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
     else: 
-        print("missing fields "+str(band))
+        print("Band missing location field"+str(band))
 
 
 ''' band ajax points 
@@ -193,21 +215,21 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 '''
 
 geocoder = Geocoder(name='mapbox.places-permanent')
-# geocode_band(get_band_by_id(5678))
 
-for band in get_ungeocoded_bands(5000):
+# geocode_band(get_band_by_id(5678))
+for band in get_ungeocoded_bands():
     geocode_band(band)
 
 # for genre in genres:
 #     scrape_genre(genre)
 
-scrape_bands(500)
-sleep(500)
-scrape_bands(500)
-sleep(500)
-scrape_bands(500)
-sleep(500)
-scrape_bands(500)
+# scrape_bands(500)
+# sleep(500)
+# scrape_bands(500)
+# sleep(500)
+# scrape_bands(500)
+# sleep(500)
+# scrape_bands(500)
 
 #clean_old_placenames()
 '''
