@@ -8,6 +8,8 @@ from time import time
 from random import random
 from datetime import datetime
 from mapbox import Geocoder
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36'}
 genres = ('heavy', 'black', 'death', 'doom', 'thrash', 'speed', 'folk', 'power', 'prog', 'electronic', 'gothic', 'orchestral', 'avantgarde')
@@ -15,6 +17,8 @@ genres = ('heavy', 'black', 'death', 'doom', 'thrash', 'speed', 'folk', 'power',
 genre_root = 'https://metal-archives.com/browse/ajax-genre/g/'
 
 GENRE_CACHE_DAYS = 120
+
+driver = webdriver.Firefox()
 
 def scrape_genre(genre):
     suffix = genre + '/json/?sEcho=1&iDisplayStart=0'
@@ -82,6 +86,7 @@ def check_cache(genre, page):
             return False
 
 def scrape_bands(limit=''):
+
     if limit: limit = " LIMIT " + str(limit)
     bands = scraperwiki.sqlite.select("* FROM swdata where scraped IS NULL OR scraped == '0' OR scraped == '-1'" + limit)
     for band in bands:
@@ -96,30 +101,52 @@ def get_failed_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
     return scraperwiki.sqlite.select("* FROM swdata where scraped == '-1'")
 
+
 def scrape_band(band):
     print ('scraping band '+ band['id'])
     if band['link']:
         print(band['link'])
-        r = requests.get(band['link'])
-        print(r)
-        if r.status_code == 200 and r.text:
-            root = lxml.html.fromstring(r.text)
-            keys = map(lambda x: x.text_content()[:-1], root.cssselect('dt'))
-            vals = map(lambda x: x.text_content(), root.cssselect('dd'))
-            for i,key in enumerate(keys):
-                if key == 'Location':
-                    band['location'] = vals[i]
-                    band['location_utf'] = vals[i].encode('ISO-8859-1').decode('utf-8')
-                elif key == 'Status':
-                    band['status'] = vals[i]
-                elif key == 'Year of creation':
-                    band['year'] = vals[i]
-                elif key == 'Lyrical themes':
-                    band['themes'] = vals[i]
-                elif key == 'Current label':
-                    band['current_label'] = vals[i]
-            save_band(band)
-            return True
+        driver.get(band['link'])
+
+        keys = map(lambda x: x.text[:-1], driver.find_elements_by_tag_name('dt'))
+        vals = map(lambda x: x.text, driver.find_elements_by_tag_name('dd'))
+        for i,key in enumerate(keys):
+            if key == 'Location':
+                band['location'] = vals[i]
+                band['location_utf'] = vals[i]#.encode('ISO-8859-1').decode('utf-8')
+                print(band['location_utf'])
+            elif key == 'Status':
+                band['status'] = vals[i]
+            elif key == 'Year of creation':
+                band['year'] = vals[i]
+            elif key == 'Lyrical themes':
+                band['themes'] = vals[i]
+            elif key == 'Current label':
+                band['current_label'] = vals[i]
+        save_band(band)
+        scrape_band(band)
+        return True
+
+        # r = requests.get(band['link'])
+        # print(r)
+        # if r.status_code == 200 and r.text:
+        #     root = lxml.html.fromstring(r.text)
+        #     keys = map(lambda x: x.text_content()[:-1], root.cssselect('dt'))
+        #     vals = map(lambda x: x.text_content(), root.cssselect('dd'))
+        #     for i,key in enumerate(keys):
+        #         if key == 'Location':
+        #             band['location'] = vals[i]
+        #             band['location_utf'] = vals[i].encode('ISO-8859-1').decode('utf-8')
+        #         elif key == 'Status':
+        #             band['status'] = vals[i]
+        #         elif key == 'Year of creation':
+        #             band['year'] = vals[i]
+        #         elif key == 'Lyrical themes':
+        #             band['themes'] = vals[i]
+        #         elif key == 'Current label':
+        #             band['current_label'] = vals[i]
+        #     save_band(band)
+        #     return True
     save_band_failed(band)
     return False
     
@@ -153,8 +180,8 @@ def clean_old_placenames():
 def get_ungeocoded_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
 
-    return scraperwiki.sqlite.select("data.* from data INNER JOIN swdata ON data.id = swdata.id WHERE geo_center IS NULL and data.location_utf IS NOT NULL and data.location_utf <> 'N/A'")
-    # return scraperwiki.sqlite.select("* from data WHERE data.location_utf IS NOT NULL and data.location_utf <> 'N/A'")
+    # return scraperwiki.sqlite.select("data.* from data INNER JOIN swdata ON data.id = swdata.id WHERE geo_center IS NULL and data.location_utf IS NOT NULL and data.location_utf <> 'N/A'")
+    return scraperwiki.sqlite.select("* from swdata WHERE geo_center IS NULL and location_utf IS NOT NULL and location_utf <> 'N/A'")
     
 def geocode_band(band):
     print("Geocoding band "+band['id'])
@@ -220,10 +247,10 @@ geocoder = Geocoder(name='mapbox.places-permanent')
 for band in get_ungeocoded_bands():
     geocode_band(band)
 
-# for genre in genres:
-#     scrape_genre(genre)
+for genre in genres:
+    scrape_genre(genre)
 
-# scrape_bands(500)
+scrape_bands(500)
 # sleep(500)
 # scrape_bands(500)
 # sleep(500)
