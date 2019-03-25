@@ -11,6 +11,7 @@ requests = "*"
 lxml = "*"
 mapbox = "*"
 selenium = "*"
+geojson = "*"
 
 [requires]
 python_version = "3.6"

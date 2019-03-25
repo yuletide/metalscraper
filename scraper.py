@@ -247,8 +247,6 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 
 
 # geocode_band(get_band_by_id(5678))
-for band in get_ungeocoded_bands():
-    geocode_band(band)
 
 # for band in get_NA_bands():
 #     save_geocode_failed(band)
@@ -256,13 +254,19 @@ for band in get_ungeocoded_bands():
 # for genre in genres:
 #     scrape_genre(genre)
 
-scrape_bands(1000)
-sleep(50)
-scrape_bands(5000)
-sleep(500)
-scrape_bands(5000)
-sleep(500)
-scrape_bands(5000)
+try: 
+    for band in get_ungeocoded_bands():
+        geocode_band(band)
+    scrape_bands(1000)
+    sleep(50)
+    scrape_bands(5000)
+    sleep(500)
+    scrape_bands(5000)
+    sleep(500)
+    scrape_bands(5000)
+except KeyboardInterrupt:
+    print('Scrape Aborted')
+    driver.quit()
 
 
 
