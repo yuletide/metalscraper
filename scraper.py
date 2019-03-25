@@ -16,10 +16,9 @@ genres = ('heavy', 'black', 'death', 'doom', 'thrash', 'speed', 'folk', 'power',
 
 genre_root = 'https://metal-archives.com/browse/ajax-genre/g/'
 
-GENRE_CACHE_DAYS = 120
+GENRE_CACHE_DAYS = 0
 
 geocoder = Geocoder(name='mapbox.places-permanent')
-driver = webdriver.Firefox()
 
 def scrape_genre(genre):
     suffix = genre + '/json/?sEcho=1&iDisplayStart=0'
@@ -59,21 +58,26 @@ def process_json(page, genre):
         link=re.sub('<a href=\'(.*)\'>(.*)</a>', '\\1|\\2', item[0]).split('|')
         # print(link)
         id = link[0].split('/')[5]
-        band = {}
+        band = get_band_by_id(id) or {}
+        # print(band)
         band['name'] = link[1]
         band['link'] = link[0]
         band['country'] = item[1]
         band['genre'] = item[2]
+        band['genre_parent'] = genre
         band['id'] = id
         band['category'] = genre
         # print(band)
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def cache_page(genre, page):
+    return True
     print("caching ", genre+" "+str(page))
     scraperwiki.sqlite.save_var(genre+str(page), datetime.now().strftime("%c"))
+    print('wtf')
 
 def check_cache(genre, page):
+    return False
     val = scraperwiki.sqlite.get_var(genre+str(page))
     print("checking cache: " + str(val))
     if val == None or val == 1:
@@ -251,12 +255,13 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 # for band in get_NA_bands():
 #     save_geocode_failed(band)
 
-# for genre in genres:
-#     scrape_genre(genre)
+for genre in genres:
+    scrape_genre(genre)
 
 try: 
     for band in get_ungeocoded_bands():
         geocode_band(band)
+    driver = webdriver.Firefox()
     scrape_bands(1000)
     sleep(50)
     scrape_bands(5000)
