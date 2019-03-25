@@ -92,7 +92,7 @@ def scrape_bands(limit=''):
     bands = scraperwiki.sqlite.select("* FROM swdata where scraped IS NULL OR scraped == '0' OR scraped == '-1'" + limit)
     for band in bands:
         scrape_band(band)
-        sleep(random()*5)
+        sleep(random()*3)
 
 def get_scraped_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
@@ -117,14 +117,18 @@ def scrape_band(band):
             if key == 'Location':
                 band['location'] = vals[i]
                 band['location_utf'] = vals[i]#.encode('ISO-8859-1').decode('utf-8')
-                print(band['location_utf'])
+                # print(band['location_utf'])
             elif key == 'Status':
                 band['status'] = vals[i]
-            elif key == 'Year of creation':
+            elif key == 'Formed in':
                 band['year'] = vals[i]
+            elif key == 'Years active':
+                band['years_active'] = vals[i]
             elif key == 'Lyrical themes':
                 band['themes'] = vals[i]
             elif key == 'Current label':
+                band['current_label'] = vals[i]
+            elif key == 'Last label':
                 band['current_label'] = vals[i]
         band['comment'] = driver.find_element_by_class_name('band_comment').text
         save_band(band)
@@ -204,8 +208,8 @@ def geocode_band(band):
         # print(collection['features'])
         if len(collection['features']):
             feature = collection['features'][0]
-            print('feature\n')
-            print(feature)
+            # print('feature\n')
+            # print(feature)
             if 'id' in feature: 
                 band['geo_place_id'] = feature['id']
             band['geo_place_name'] = feature['place_name']
@@ -243,8 +247,8 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 
 
 # geocode_band(get_band_by_id(5678))
-# for band in get_ungeocoded_bands():
-#     geocode_band(band)
+for band in get_ungeocoded_bands():
+    geocode_band(band)
 
 # for band in get_NA_bands():
 #     save_geocode_failed(band)
@@ -254,11 +258,11 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 
 scrape_bands(1000)
 sleep(50)
-scrape_bands(500)
+scrape_bands(5000)
 sleep(500)
-scrape_bands(500)
+scrape_bands(5000)
 sleep(500)
-scrape_bands(500)
+scrape_bands(5000)
 
 
 
