@@ -10,6 +10,7 @@ from datetime import datetime
 from mapbox import Geocoder
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import NoSuchElementException
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36'}
 genres = ('heavy', 'black', 'death', 'doom', 'thrash', 'speed', 'folk', 'power', 'prog', 'electronic', 'gothic', 'orchestral', 'avantgarde')
@@ -96,7 +97,7 @@ def scrape_bands(limit=''):
     bands = scraperwiki.sqlite.select("* FROM swdata where scraped IS NULL OR scraped == '0' OR scraped == '-1'" + limit)
     for band in bands:
         scrape_band(band)
-        sleep(random()*3)
+        sleep(random()*2)
 
 def get_scraped_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
@@ -114,7 +115,19 @@ def scrape_band(band):
     if band['link']:
         print(band['link'])
         driver.get(band['link'])
-
+        try: 
+            driver.find_element_by_class_name('band_name')
+        except NoSuchElementException:
+            body = driver.find_element_by_tag_name('body')
+            if body.text == 'Forbidden.':
+                print('Rate limited')
+                sleep(60)
+                return scrape_band(band)
+            else: 
+                print('Not a valid band page')
+                save_band_failed(band)
+                return False
+        
         keys = list(map(lambda x: x.text[:-1], driver.find_elements_by_tag_name('dt')))
         vals = list(map(lambda x: x.text, driver.find_elements_by_tag_name('dd')))
         for i,key in enumerate(keys):
@@ -158,18 +171,28 @@ def save_geocode(band):
     scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def save_geocode_failed(band):
-    print('geocode failed '+band['id'])
-    # band['geocoded'] = 0
-    band['geo_place_name'] = '-1'
+    print('geocode failed '+str(band))
+    if band['location_utf'] == 'N/A':
+        band['geo_place_name'] = 0
+    else:
+        band['geo_place_name'] = '-1'
+    band['geocoded'] = None
     scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
+def clear_bands_by_ids(ids):
+    print(ids)
+    bands = list(map(lambda x: get_band_by_id(x), ids))
+    print(bands)
+    clear_band_cache(bands)
+    
 def clear_band_cache(bands):
     for band in bands:
+        print('Clearing band '+band['id'])
         band['scraped'] = None
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def get_band_by_id(id):
-    records = scraperwiki.sqlite.select("* from data WHERE id="+str(id))
+    records = scraperwiki.sqlite.select("* from swdata WHERE id="+str(id))
     if len(records): return records[0]
 
 def clean_old_placenames():
@@ -183,6 +206,10 @@ def get_ungeocoded_bands(limit=''):
     # return scraperwiki.sqlite.select("data.* from data INNER JOIN swdata ON data.id = swdata.id WHERE geo_center IS NULL and data.location_utf IS NOT NULL and data.location_utf <> 'N/A'")
     return scraperwiki.sqlite.select("* from swdata WHERE geo_place_name IS NULL and location_utf IS NOT NULL and location_utf <> 'N/A'")
     
+def geocode_weird_names():
+    for band in scraperwiki.sqlite.select("* from swdata WHERE location_utf LIKE '%;%'"):
+        geocode_band(band)
+
 def geocode_band(band):
     print("Geocoding band "+band['id'])
     types = ('place', 'locality', 'region', 'district')
@@ -192,19 +219,24 @@ def geocode_band(band):
         return False
 
     if band['location_utf'] and band['country']:
-        query = band['location_utf'] + ', ' + band['country']
+        location = band['location_utf']
+
+        print(location)
+        if '(early)' in location:
+            print('Complex location - early')
+            location = location.split('(early)')[0] # take the original location or the later one?
+            print('cleaned location '+location)    
+        if ';' in location:
+            print('Complex location - ;')
+            location = location.split(';')[0]
+            print('cleaned location '+location)    
+        if '/' in location:
+            print('Complex location - /')
+            location = location.split('/')[0]
+            print('cleaned location '+location)    
+
         # TODO geocode both early and later? Make this smarter
-        print(query)
-        if '(early)' in query:
-            # print(query.split('(early)'))
-            query = re.sub('\;', '', query)
-            query = query.split('(early)')[1]
-            query = re.sub('\(later\)', '', query)
-            print('Early query '+query)
-        elif ';' in query:
-            query = query.split(';')[0]
-            query = re.sub('\;', '', query)
-        print('cleaned query '+query)    
+        query = location + ', ' + band['country']
         response = geocoder.forward(query, types=types)
         collection = response.json()
         # print(collection)
@@ -235,8 +267,6 @@ def geocode_band(band):
         save_geocode_failed(band)
         return False
 
-
-
 ''' band ajax points 
 root: http://www.metal-archives.com/band/view/id/3540277491
 $('dt') for headers
@@ -255,8 +285,9 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 # for band in get_NA_bands():
 #     save_geocode_failed(band)
 
-for genre in genres:
-    scrape_genre(genre)
+# for genre in genres:
+#     scrape_genre(genre)
+
 
 try: 
     for band in get_ungeocoded_bands():
@@ -272,6 +303,8 @@ try:
 except KeyboardInterrupt:
     print('Scrape Aborted')
     driver.quit()
+
+# geocode_weird_names()
 
 
 
