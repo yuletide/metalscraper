@@ -2,10 +2,7 @@ import scraperwiki
 import json
 from geojson import Point, Feature, FeatureCollection
 import geojson
-import re
 import ast
-# import shapely
-
 
 def get_geocoded_bands(limit=''):
     if limit: limit = " LIMIT " + str(limit)
@@ -13,14 +10,13 @@ def get_geocoded_bands(limit=''):
 
 bands = []
 
+print('{"features": [')
 for band in get_geocoded_bands():
-    # band_geom = geojson.loads(band['geo_geom'])
-    band_center = ast.literal_eval(band['geo_center'])
-    band_point = Point(band_center)
-    # print (band_point)
-    # print(band_geom)
-    band_feature = Feature(geometry=band_point, properties=band)
-    # print(band_feature)
+    # band_center = ast.literal_eval(band['geo_center']) # parse the array
+    band_geom = ast.literal_eval(band['geo_geom'])
+    band_feature = Feature(geometry=band_geom, properties=band)
     bands.append(band_feature)
+    print(json.dumps(band_feature)+',') # for tippecanoe --read-parallel
 
-print(FeatureCollection(bands))
+print('], "type": "FeatureCollection"}')
+# print(geojson.dumps(FeatureCollection(bands)))
