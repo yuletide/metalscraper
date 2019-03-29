@@ -65,10 +65,11 @@ def process_json(page, genre):
         band['link'] = link[0]
         band['country'] = item[1]
         band['genre'] = item[2]
-        band['genre_parent'] = genre
         band['id'] = id
+        band['genre_parent'] = genre # this is broken since bands can be on multiple genre pages
+        band['genre_' + genre] = 1
         band['category'] = genre
-        # print(band)
+        print(band)
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def cache_page(genre, page):
