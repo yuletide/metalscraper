@@ -1,5 +1,5 @@
 load database
-     from sqlite:///Users/alexyule/code/metalscraper/scraperwiki.sqlite
+     from sqlite://scraperwiki.sqlite
      into postgresql:///postgres
 
  with include drop, create tables, create indexes, reset sequences;
