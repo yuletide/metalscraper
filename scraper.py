@@ -94,7 +94,7 @@ def check_cache(genre, page):
 def scrape_bands(limit=''):
 
     if limit: limit = " LIMIT " + str(limit)
-    bands = scraperwiki.sqlite.select("* FROM swdata where scraped IS NULL" + limit)
+    bands = scraperwiki.sqlite.select("* FROM swdata where scraped IS NULL or location_utf IS NULL" + limit)
     for band in bands:
         scrape_band(band)
         sleep(random()*2)
