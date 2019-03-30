@@ -66,10 +66,9 @@ def process_json(page, genre):
         band['country'] = item[1]
         band['genre'] = item[2]
         band['id'] = id
-        band['genre_parent'] = genre # this is broken since bands can be on multiple genre pages
         band['genre_' + genre] = 1
         band['category'] = genre
-        print(band)
+        # print(band)
         scraperwiki.sqlite.save(unique_keys=['id'], data=band)
 
 def cache_page(genre, page):
@@ -95,7 +94,7 @@ def check_cache(genre, page):
 def scrape_bands(limit=''):
 
     if limit: limit = " LIMIT " + str(limit)
-    bands = scraperwiki.sqlite.select("* FROM swdata where scraped IS NULL OR scraped == '0' OR scraped == '-1'" + limit)
+    bands = scraperwiki.sqlite.select("* FROM swdata where scraped IS NULL" + limit)
     for band in bands:
         scrape_band(band)
         sleep(random()*2)
@@ -118,6 +117,7 @@ def scrape_band(band):
         driver.get(band['link'])
         try: 
             driver.find_element_by_class_name('band_name')
+
         except NoSuchElementException:
             body = driver.find_element_by_tag_name('body')
             if body.text == 'Forbidden.':
@@ -128,6 +128,19 @@ def scrape_band(band):
                 print('Not a valid band page')
                 save_band_failed(band)
                 return False
+
+
+        # For bands like https://www.metal-archives.com/bands/Cyttorak/41336
+        try:
+            error_block = driver.find_element_by_id('errorBlockmessage')
+            if error_block and "not found" in error_block.text:
+                print("ERROR BAND NOT FOUND")
+                save_band_failed(band)
+                return False
+            elif error_block:
+                raise Exception('unknown error block found', error_block.text)
+        except NoSuchElementException:
+            pass
         
         keys = list(map(lambda x: x.text[:-1], driver.find_elements_by_tag_name('dt')))
         vals = list(map(lambda x: x.text, driver.find_elements_by_tag_name('dd')))
@@ -286,9 +299,12 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 # for band in get_NA_bands():
 #     save_geocode_failed(band)
 
-for genre in genres:
-    scrape_genre(genre)
+# for genre in genres:
+#     scrape_genre(genre)
 
+# test for error handling. 
+# TODO I should really write some tests for this thing
+# scrape_band(get_band_by_id(41336))
 
 try: 
     for band in get_ungeocoded_bands():
