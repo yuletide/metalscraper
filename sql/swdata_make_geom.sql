@@ -1,6 +1,8 @@
 -- alter table swdata drop column geom;
 ALTER TABLE swdata 
-	ADD COLUMN IF NOT EXISTS geom GEOMETRY(POINT, 4326);
+	ADD COLUMN
+IF NOT EXISTS geom GEOMETRY
+(POINT, 4326);
 
 UPDATE swdata
 	SET geom=ST_SetSRID(
@@ -8,6 +10,6 @@ UPDATE swdata
 			replace(
 				replace(geo_geom, '''','"')
 				,'u', '')
-			::json)
+::json)
 		,4326) 
 	where geo_geom is not null
