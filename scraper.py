@@ -340,12 +340,12 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 # for band in get_NA_bands():
 #     save_geocode_failed(band)
 
-# for genre in genres:
-#     scrape_genre(genre)
+for genre in genres:
+    scrape_genre(genre)
 
 # test for error handling.
 # TODO I should really write some tests for this thing
-# scrape_band(get_band_by_id(41336))
+scrape_band(get_band_by_id(41336))
 
 try:
     # for band in get_ungeocoded_bands():
