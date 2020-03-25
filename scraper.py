@@ -345,8 +345,8 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 
 # test for error handling.
 # TODO I should really write some tests for this thing
-driver = webdriver.Firefox()
-scrape_band(get_band_by_id(41336))
+# driver = webdriver.Firefox()
+# scrape_band(get_band_by_id(41336))
 
 try:
     # for band in get_ungeocoded_bands():
@@ -359,6 +359,7 @@ try:
     scrape_bands(5000)
     sleep(500)
     scrape_bands(5000)
+    driver.quit()
 except KeyboardInterrupt:
     print('Scrape Aborted')
     driver.quit()
