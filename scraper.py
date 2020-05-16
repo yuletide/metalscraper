@@ -25,8 +25,10 @@ geocoder = Geocoder(name='mapbox.places-permanent')
 
 
 def scrape_genre(genre):
+    print("scraping genre ", genre)
     suffix = genre + '/json/?sEcho=1&iDisplayStart=0'
     r = requests.get(genre_root + suffix, headers=headers)
+    print(r)
     page = json.loads(r.text)
     count = page['iTotalRecords']
     pages = count // 500
@@ -335,7 +337,7 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 '''
 
 
-geocode_band(get_band_by_id(5678))
+# geocode_band(get_band_by_id(5678))
 
 # for band in get_NA_bands():
 #     save_geocode_failed(band)
