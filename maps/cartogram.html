@@ -1,0 +1,51 @@
+<!-- https://vasturiano.github.io/cartogram-chart/example/world-population/ -->
+<head>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/4.11.0/d3.min.js"></script>
+  <script src="https://unpkg.com/cartogram-chart"></script>
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <script>
+    d3.json('metalscraper-data/admin_1_bands_topo.json', (error, admins) => {
+      if (error) throw error;
+      console.log(admins);
+
+      // exclude antarctica
+      // world.objects.countries.geometries.splice(
+      //     world.objects.countries.geometries.findIndex(d => d.properties.ISO_A2 === 'AQ'),
+      //     1
+      // );
+
+      const colorScale = d3.scaleOrdinal([
+        ...d3.schemeCategory20,
+        ...d3.schemeCategory20b,
+        ...d3.schemeCategory20c
+      ]);
+
+      Cartogram().topoJson(admins)(document.getElementById('map'));
+      // .topoObjectName('admin')
+      // .iterations(120)
+      // .value(({ properties }) => properties.bands_count)
+      // // .color(({ properties: { ISO_A2 } }) => colorScale(ISO_A2))
+      // .label(
+      //   ({ properties: p }) => `Bands: ${p.bands_count} (${p.country_code})`
+      // )
+      // .valFormatter(d3.format('.3s'))
+      // .onClick(d => console.info(d))(document.getElementById('map'));
+    });
+
+    // Cartogram()
+    //             .topoJson(world)
+    //             .topoObjectName('countries')
+    //             .iterations(120)
+    //             .value(({ properties }) => properties.POP_EST)
+    //             .color(({ properties: { ISO_A2 } }) => colorScale(ISO_A2))
+    //             .label(({ properties: p }) => `Population of ${p.NAME} (${p.ISO_A2})`)
+    //             .valFormatter(d3.format(".3s"))
+    //             .onClick(d => console.info(d))
+    //             (document.getElementById('world'));
+    //     });
+  </script>
+</body>
