@@ -4,6 +4,8 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pylint = "*"
+autopep8 = "*"
 
 [packages]
 scraperwiki = "*"
@@ -11,6 +13,16 @@ requests = "*"
 lxml = "*"
 mapbox = "*"
 selenium = "*"
+geojson = "*"
+sqlalchemy = "*"
+geoalchemy2 = "*"
+psycopg2-binary = "*"
+pylint = "*"
+# psycopg2
+# pycodestyle…
+# geojson…
+# autopep8…
+# astroid…
 
 [requires]
 python_version = "3.6"
