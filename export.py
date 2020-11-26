@@ -1,12 +1,15 @@
 import scraperwiki
-import json
 from geojson import Point, Feature, FeatureCollection
 import geojson
+import json
 import ast
 
+
 def get_geocoded_bands(limit=''):
-    if limit: limit = " LIMIT " + str(limit)
+    if limit:
+        limit = " LIMIT " + str(limit)
     return scraperwiki.sqlite.select("* FROM swdata where geo_geom IS NOT NULL and geo_place_name <> '-1'" + limit)
+
 
 # bands = []
 PRECISION = 6
