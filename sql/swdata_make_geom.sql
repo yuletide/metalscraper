@@ -4,12 +4,10 @@ ALTER TABLE swdata
 IF NOT EXISTS geom GEOMETRY
 (POINT, 4326);
 
-UPDATE swdata
-	SET geom=ST_SetSRID(
-		ST_GeomFromGeoJson(
-			replace(
-				replace(geo_geom, '''','"')
-				,'u', '')
-::json)
-		,4326) 
-	where geo_geom is not null
+UPDATE
+	swdata
+SET
+	geom = ST_SetSRID (ST_GeomFromGeoJson(replace(replace(geo_geom, '''', '"'), 'u', '')::json),
+		4326)
+WHERE
+	geo_geom IS NOT NULL

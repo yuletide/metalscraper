@@ -79,14 +79,14 @@ def process_json(page, genre):
 
 
 def cache_page(genre, page):
-    return True
+    # return True
     print("caching ", genre+" "+str(page))
     scraperwiki.sqlite.save_var(genre+str(page), datetime.now().strftime("%c"))
     print('wtf')
 
 
 def check_cache(genre, page):
-    return False
+    # return False
     val = scraperwiki.sqlite.get_var(genre+str(page))
     print("checking cache: " + str(val))
     if val == None or val == 1:
@@ -101,7 +101,6 @@ def check_cache(genre, page):
 
 
 def scrape_bands(limit=''):
-
     if limit:
         limit = " LIMIT " + str(limit)
     bands = scraperwiki.sqlite.select(
@@ -137,14 +136,16 @@ def scrape_band(band):
             driver.find_element_by_class_name('band_name')
 
         except NoSuchElementException:
-            body = driver.find_element_by_tag_name('body')
-            if body.text == 'Forbidden.':
+            if driver.find_element_by_tag_name('body').text == 'Forbidden.':
                 print('Rate limited')
                 sleep(60)
                 return scrape_band(band)
+            elif driver.find_element_by_id('cf-wrapper'):
+                print("Crowdflare error")
+                raise("Crowdflare caught")
+                return scrape_band(band)
             else:
-                content_block = driver.find_element_by_id(
-                    'content_wrapper')
+                content_block = driver.find_element_by_id('content_wrapper')
                 if content_block and "may refer" in content_block.text:
                     print("May refer found")
                 # By.xpath("//*[text()='may refer to']"))
@@ -244,15 +245,6 @@ def get_band_by_id(id):
         return records[0]
 
 
-def clean_old_placenames():
-    records = scraperwiki.sqlite.select(
-        "* from data WHERE location IS NOT NULL and location_utf is NULL")
-    for band in records:
-        band['location_utf'] = band['location'].encode(
-            'ISO-8859-1').decode('utf-8')
-        scraperwiki.sqlite.save(unique_keys=['id'], data=band)
-
-
 def get_ungeocoded_bands(limit=''):
     if limit:
         limit = " LIMIT " + str(limit)
@@ -308,10 +300,11 @@ def geocode_band(band):
             band['geo_place_type'] = feature['place_type'][0]
             band['geo_relevance'] = feature['relevance']
             band['geo_center'] = str(feature['center'])
-            band['geo_geom'] = str(feature['geometry'])
-            band['geo_properties'] = str(feature['properties'])
+            # band['geo_geom'] = str(feature['geometry'])
+            band['geo_geom'] = json.dumps(feature['geometry'])
+            band['geo_properties'] = json.dumps(feature['properties'])
             if 'context' in feature:
-                band['geo_context'] = str(feature['context'])
+                band['geo_context'] = json.dumps(feature['context'])
             save_geocode(band)
             return True
         else:
@@ -324,7 +317,7 @@ def geocode_band(band):
         return False
 
 
-''' band ajax points 
+''' band ajax points
 root: http://www.metal-archives.com/band/view/id/3540277491
 $('dt') for headers
 $('dd') for values
@@ -337,18 +330,15 @@ links: http://www.metal-archives.com/link/ajax-list/type/band/id/3540277491
 '''
 
 
-# geocode_band(get_band_by_id(5678))
-
 # for band in get_NA_bands():
 #     save_geocode_failed(band)
 
 # for genre in genres:
 #     scrape_genre(genre)
 
-# test for error handling.
 # TODO I should really write some tests for this thing
-# driver = webdriver.Firefox()
 # scrape_band(get_band_by_id(41336))
+# geocode_band(get_band_by_id(5678))
 
 try:
     # for band in get_ungeocoded_bands():

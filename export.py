@@ -19,7 +19,8 @@ bands_list = get_geocoded_bands()
 
 for i, band in enumerate(bands_list):
     # band_center = ast.literal_eval(band['geo_center']) # should be the same as geom, but just in case
-    band_geom = ast.literal_eval(band['geo_geom'])
+    # band_geom = ast.literal_eval(band['geo_geom'])
+    band_geom = json.loads(band['geo_geom'])
 
     # Rounding to save space if needed:
     # coords=list(map(lambda c: round(c, PRECISION), band_geom['coordinates']))
